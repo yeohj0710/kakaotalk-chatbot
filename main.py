@@ -2,9 +2,8 @@ import win32gui, win32con, win32api, ctypes, time
 import pandas as pd
 from pywinauto import clipboard
 
-room = win32gui.FindWindow(None, "채팅방 이름")
+room = win32gui.FindWindow(None, "바위게")
 inBox = win32gui.FindWindowEx(room, None , "RICHEDIT50W" , None)  # 채팅창의 메세지 입력창
-cmdCall = '챗봇' # 커맨드 (ex : 날씨 ← 크롤링 구현)
 
 PBYTE256 = ctypes.c_ubyte * 256
 _user32 = ctypes.WinDLL("user32")
@@ -90,27 +89,37 @@ def chat_check_command(cls, clst):
     getText[0] = getText[0].str.replace('\[([\S\s]+)\] \[(오전|오후)([0-9:\s]+)\] ', '')
 
     if getText.iloc[-2, 0] == clst:
-        print("There's no new chat.")
         return getText.index[-2], getText.iloc[-2, 0]
     else:
-        print("New chat was found.")
         getText_ = getText.iloc[cls+1 : , 0]
-        found = getText_[getText_.str.contains(cmdCall)]
 
-        if int(found.count()) >= 1 :
-            print("Command was found.")
-            kakao_sendtext("부르셨나요?")
-            return getText.index[-2], getText.iloc[-2, 0]
-        else:
-            print("No command was found.")
-            return getText.index[-2], getText.iloc[-2, 0]
+        fp = open("QnA.txt", "rt", encoding='UTF8')
+        lines = fp.read().splitlines()
+        data = []
+
+        for line in lines:
+            data.append(line)
+
+        for i in range(0, len(data), 2):
+            found = getText_[getText_.str.contains(data[i])]
+            if int(found.count()) >= 1:
+                print(data[i])
+                print(lines[i+1])
+                kakao_sendtext(lines[i+1])
+
+                time.sleep(1)
+                getText = get_chat()
+                getText = getText.split('\r\n')
+                getText = pd.DataFrame(getText)
+                getText[0] = getText[0].str.replace('\[([\S\s]+)\] \[(오전|오후)([0-9:\s]+)\] ', '')
+        fp.close()
+
+        return getText.index[-2], getText.iloc[-2, 0]
 
 def main():
-    # kakao_sendtext()
     cls, clst = chat_last_save()
 
     while True:
-        print("실행중입니다.")
         cls, clst = chat_check_command(cls, clst)
         time.sleep(1)
 
