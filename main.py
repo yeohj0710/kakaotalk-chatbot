@@ -4,7 +4,7 @@ from pywinauto import clipboard
 
 room = win32gui.FindWindow(None, "채팅방 이름")
 inBox = win32gui.FindWindowEx(room, None , "RICHEDIT50W" , None)  # 채팅창의 메세지 입력창
-cmdCall = '커맨드 (ex : 챗봇)'
+cmdCall = '챗봇' # 커맨드 (ex : 날씨 ← 크롤링 구현)
 
 PBYTE256 = ctypes.c_ubyte * 256
 _user32 = ctypes.WinDLL("user32")
